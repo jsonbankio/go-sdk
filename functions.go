@@ -3,8 +3,8 @@ package jsonbank
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/jsonbankio/go-sdk/types"
 	"io"
-	"jsonbank/types"
 )
 
 // MakeDocumentPath - generate a document full path

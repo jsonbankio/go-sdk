@@ -3,7 +3,7 @@ package jsonbank
 import (
 	"errors"
 	"fmt"
-	"jsonbank/types"
+	"github.com/jsonbankio/go-sdk/types"
 	"testing"
 )
 

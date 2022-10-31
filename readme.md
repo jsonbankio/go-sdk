@@ -2,6 +2,15 @@
 
 ##### Still in Development Phase
 
+## Installation
+
+Get the go-lib module
+Note that you need to include the v in the version tag.
+
+```bash
+go get github.com/jsonbankio/go-sdk
+```
+
 ## Usage
 
 ```go
