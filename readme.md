@@ -28,7 +28,7 @@ func main() {
 
 	fmt.Println("Authenticated as: ", authenticate.Username)
 
-	meta, dataError := jsb.GetOwnDocumentMeta("js-sdk-test/index.json")
+	meta, err := jsb.GetOwnDocumentMeta("js-sdk-test/index.json")
 	if dataError != nil {
 		fmt.Println("Error:", dataError)
 		return
