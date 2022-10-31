@@ -19,6 +19,13 @@ type NewDocument struct {
 	Exists    bool   `json:"exists"`
 }
 
+type NewFolder struct {
+	Id      string `json:"id"`
+	Name    string `json:"name"`
+	Path    string `json:"path"`
+	Project string `json:"project"`
+}
+
 type DocumentMeta struct {
 	Id        string `json:"id"`
 	Project   string `json:"project"`
@@ -29,4 +36,8 @@ type DocumentMeta struct {
 
 type UpdatedDocument struct {
 	Changed bool `json:"changed"`
+}
+
+type DeletedDocument struct {
+	Deleted bool `json:"deleted"`
 }

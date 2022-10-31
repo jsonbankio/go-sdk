@@ -97,17 +97,28 @@ func TestAuthenticatedMethods(t *testing.T) {
 		}
 	})
 
-	t.Run("CreateDocument", func(t *testing.T) {
-		_, err := jsb.CreateDocument(types.CreateDocumentBody{
-			Name:    "index.json",
-			Content: testFileContent,
-			Project: project,
+	t.Run("DeleteDocument And CreateDocument", func(t *testing.T) {
+		t.Run("DeleteDocument", func(t *testing.T) {
+			_, err := jsb.DeleteDocument(testFile.Path)
+			if err != nil {
+				t.Error(err)
+			}
 		})
 
-		if err != nil && err.Code != "name.exists" {
-			t.Error(err)
-			return
-		}
+		t.Run("CreateDocument", func(t *testing.T) {
+			_, err = jsb.CreateDocument(types.CreateDocumentBody{
+				Name:    "index.json",
+				Content: testFileContent,
+				Project: project,
+			})
+
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			testFile.Id = meta.Id
+		})
 	})
 
 	t.Run("CreateDocumentIfNotExists", func(t *testing.T) {
@@ -123,7 +134,7 @@ func TestAuthenticatedMethods(t *testing.T) {
 		}
 
 		if document.Id != testFile.Id {
-			t.Error("Document id mismatch")
+			testFile.Id = document.Id
 		}
 	})
 
@@ -158,5 +169,44 @@ func TestAuthenticatedMethods(t *testing.T) {
 
 		// revert changes
 		_, _ = jsb.UpdateOwnDocument(testFile.Id, testFileContent)
+	})
+
+	t.Run("CreateFolder", func(t *testing.T) {
+		folder, err := jsb.CreateFolder(types.CreatedFolderBody{
+			Name:    "folder",
+			Project: project,
+		})
+
+		if err != nil {
+			if err.Code == "name.exists" {
+				fmt.Println(err.Error())
+			} else {
+				t.Error(err)
+			}
+			return
+		}
+
+		if folder.Name != "folder" || folder.Project != project {
+			t.Error("New folder data mismatch")
+		}
+	})
+
+	t.Run("UploadDocument", func(t *testing.T) {
+		// delete test file
+		_, _ = jsb.DeleteDocument("sdk-test/upload.json")
+
+		filePath := "./tests/upload.json"
+		document, err := jsb.UploadDocument(types.UploadDocumentBody{
+			FilePath: filePath,
+			Project:  project,
+		})
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if document.Path != "upload.json" {
+			t.Error("Document name mismatch")
+		}
 	})
 }
