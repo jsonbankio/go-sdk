@@ -1,4 +1,4 @@
-tests*
-!tests/upload.json
 .vscode
 .idea
+*.env
+tests/test.go
