@@ -1,0 +1,162 @@
+package jsonbank
+
+import (
+	"errors"
+	"fmt"
+	"jsonbank/types"
+	"testing"
+)
+
+type TestFile struct {
+	Id   string
+	Path string
+}
+
+func TestAuthenticatedMethods(t *testing.T) {
+	var jsb = Init(Config{
+		Host: "http://localhost:2221",
+		Keys: Keys{
+			Public:  "pub_wSef-7nVXxvW07hT9tw0_IaHTfepODYNKAqRQCibd7zypIntuzb2hy3r",
+			Private: "prv_XuQ8y_ycmO53dLy7JWL0bu-aj_4k2Bi2pW0coVBGoRd0fZxU6WJ26Kaa",
+		},
+	})
+
+	const project = "sdk-test"
+	var testFile = TestFile{"", fmt.Sprintf("%v/index.json", project)}
+	const testFileContent = `{
+    "name": "JsonBank SDK Test File",
+    "author": "jsonbank"}`
+
+	// Get test file Id
+	meta, err := jsb.GetOwnDocumentMeta(testFile.Path)
+	if err != nil {
+		t.Error(errors.New("Test document not found. Please create a document with the content below at {" + testFile.Path + "} before running tests."))
+		return
+	}
+
+	testFile.Id = meta.Id
+
+	t.Run("Authenticate", func(t *testing.T) {
+		authenticate, err := jsb.Authenticate()
+		if err != nil {
+			t.Error(err)
+		}
+		fmt.Println("Authenticated as: ", authenticate.Username)
+	})
+
+	t.Run("Authenticated", func(t *testing.T) {
+		if !jsb.Authenticated() {
+			t.Error("User is not authenticated")
+		}
+	})
+
+	t.Run("GetOwnContent", func(t *testing.T) {
+		content, err := jsb.GetOwnContent(testFile.Id)
+		if err != nil {
+			t.Error(err)
+		}
+		formattedContent := content.(map[string]interface{})
+
+		if formattedContent["author"] != "jsonbank" {
+			t.Error("Content does not match")
+		}
+	})
+
+	t.Run("GetOwnContentByPath", func(t *testing.T) {
+		content, err := jsb.GetOwnContentByPath(testFile.Path)
+		if err != nil {
+			t.Error(err)
+		}
+
+		formattedContent := content.(map[string]interface{})
+
+		if formattedContent["author"] != "jsonbank" {
+			t.Error("Content does not match")
+		}
+	})
+
+	t.Run("GetOwnDocumentMeta", func(t *testing.T) {
+		meta, err := jsb.GetOwnDocumentMeta(testFile.Id)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if meta.Id != testFile.Id {
+			t.Error("Meta does not match")
+		}
+	})
+
+	t.Run("GetOwnDocumentMetaByPath", func(t *testing.T) {
+		meta, err := jsb.GetOwnDocumentMetaByPath(testFile.Path)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if meta.Id != testFile.Id {
+			t.Error("Meta does not match")
+		}
+	})
+
+	t.Run("CreateDocument", func(t *testing.T) {
+		_, err := jsb.CreateDocument(types.CreateDocumentBody{
+			Name:    "index.json",
+			Content: testFileContent,
+			Project: project,
+		})
+
+		if err != nil && err.Code != "name.exists" {
+			t.Error(err)
+			return
+		}
+	})
+
+	t.Run("CreateDocumentIfNotExists", func(t *testing.T) {
+		document, err := jsb.CreateDocumentIfNotExists(types.CreateDocumentBody{
+			Name:    "index.json",
+			Content: testFileContent,
+			Project: project,
+		})
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		if document.Id != testFile.Id {
+			t.Error("Document id mismatch")
+		}
+	})
+
+	t.Run("HasOwnDocument", func(t *testing.T) {
+		// try by id
+		exists := jsb.HasOwnDocument(testFile.Id)
+		if !exists {
+			t.Error("Document does not exist")
+		}
+
+		// try by path
+		exists = jsb.HasOwnDocument(testFile.Path)
+		if !exists {
+			t.Error("Document does not exist")
+		}
+	})
+
+	t.Run("UpdateOwnDocument", func(t *testing.T) {
+		res, err := jsb.UpdateOwnDocument(testFile.Id, `{
+    		"name": "JsonBank SDK Test File",
+    		"author": "jsonbank", 
+			"updated": true
+		}`)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if res.Changed != true {
+			t.Error("Document was not updated")
+		}
+
+		// revert changes
+		_, _ = jsb.UpdateOwnDocument(testFile.Id, testFileContent)
+	})
+}
