@@ -1,3 +1,4 @@
-tests
+tests*
+!tests/upload.json
 .vscode
 .idea
