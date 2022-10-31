@@ -24,13 +24,18 @@ func TestAuthenticatedMethods(t *testing.T) {
 	const project = "sdk-test"
 	var testFile = TestFile{"", fmt.Sprintf("%v/index.json", project)}
 	const testFileContent = `{
-    "name": "JsonBank SDK Test File",
-    "author": "jsonbank"}`
+    	"name": "JsonBank SDK Test File",
+    	"author": "jsonbank"
+	}`
 
 	// Get test file Id
 	meta, err := jsb.GetOwnDocumentMeta(testFile.Path)
 	if err != nil {
-		t.Error(errors.New("Test document not found. Please create a document with the content below at {" + testFile.Path + "} before running tests."))
+		if err.Code == "notFound" {
+			t.Error(errors.New("Test document not found. Please create a document with the content below at {" + testFile.Path + "} before running tests."))
+		} else {
+			t.Error(err)
+		}
 		return
 	}
 
@@ -192,7 +197,7 @@ func TestAuthenticatedMethods(t *testing.T) {
 	})
 
 	t.Run("UploadDocument", func(t *testing.T) {
-		// delete test file
+		// delete test file.
 		_, _ = jsb.DeleteDocument("sdk-test/upload.json")
 
 		filePath := "./tests/upload.json"
@@ -203,6 +208,7 @@ func TestAuthenticatedMethods(t *testing.T) {
 
 		if err != nil {
 			t.Error(err)
+			return
 		}
 
 		if document.Path != "upload.json" {
