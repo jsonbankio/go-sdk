@@ -3,7 +3,9 @@ package jsonbank
 import (
 	"errors"
 	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/jsonbankio/go-sdk/types"
+	"os"
 	"testing"
 )
 
@@ -12,9 +14,24 @@ type TestFile struct {
 	Path string
 }
 
+const testFileContent = `{
+	"name": "JsonBank SDK Test File",
+	"author": "jsonbank"
+}`
+
+// read .env file
+func loadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func TestNotAuthenticated(t *testing.T) {
+	loadEnv()
+
 	var jsb = InitWithoutKeys()
-	jsb.SetHost("http://localhost:2221")
+	jsb.SetHost(os.Getenv("JSB_HOST"))
 
 	const project = "jsonbank/sdk-test"
 	var testFile = TestFile{"", fmt.Sprintf("%v/index.json", project)}
@@ -23,7 +40,7 @@ func TestNotAuthenticated(t *testing.T) {
 	meta, err := jsb.GetDocumentMetaByPath(testFile.Path)
 	if err != nil {
 		if err.Code == "notFound" {
-			t.Error(errors.New("Test document not found. Please create a document with the content below at {" + testFile.Path + "} before running tests."))
+			t.Error("Test document not found. Please create a document with the content below at {" + testFile.Path + "} before running tests.\n" + testFileContent)
 		} else {
 			t.Error(err)
 		}
@@ -84,26 +101,24 @@ func TestNotAuthenticated(t *testing.T) {
 }
 
 func TestAuthenticated(t *testing.T) {
+	loadEnv()
+
 	var jsb = Init(Config{
-		Host: "http://localhost:2221",
+		Host: os.Getenv("JSB_HOST"),
 		Keys: Keys{
-			Public:  "pub_wSef-7nVXxvW07hT9tw0_IaHTfepODYNKAqRQCibd7zypIntuzb2hy3r",
-			Private: "prv_XuQ8y_ycmO53dLy7JWL0bu-aj_4k2Bi2pW0coVBGoRd0fZxU6WJ26Kaa",
+			Public:  os.Getenv("JSB_PUBLIC_KEY"),
+			Private: os.Getenv("JSB_PRIVATE_KEY"),
 		},
 	})
 
 	const project = "sdk-test"
 	var testFile = TestFile{"", fmt.Sprintf("%v/index.json", project)}
-	const testFileContent = `{
-    	"name": "JsonBank SDK Test File",
-    	"author": "jsonbank"
-	}`
 
 	// Get test file Id
 	meta, err := jsb.GetOwnDocumentMeta(testFile.Path)
 	if err != nil {
 		if err.Code == "notFound" {
-			t.Error(errors.New("Test document not found. Please create a document with the content below at {" + testFile.Path + "} before running tests."))
+			t.Error("Test document not found. Please create a document with the content below at {" + testFile.Path + "} before running tests.\n" + testFileContent)
 		} else {
 			t.Error(err)
 		}
@@ -267,7 +282,7 @@ func TestAuthenticated(t *testing.T) {
 		}
 	})
 
-	t.Run("UploadDocument to new folder", func(t *testing.T) {
+	t.Run("UploadDocument To New Folder", func(t *testing.T) {
 		// delete test file.
 		_, _ = jsb.DeleteDocument("sdk-test/folder/upload.json")
 
