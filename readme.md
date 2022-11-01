@@ -1,6 +1,6 @@
 # Jsonbank.io GoLang Sdk
 
-##### Still in Development Phase
+The official repository for jsonbank.io GoLang SDK.
 
 ## Installation
 

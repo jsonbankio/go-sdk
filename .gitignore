@@ -2,3 +2,4 @@
 .idea
 *.env
 tests/test.go
+package.json
