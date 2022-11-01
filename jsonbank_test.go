@@ -12,7 +12,78 @@ type TestFile struct {
 	Path string
 }
 
-func TestAuthenticatedMethods(t *testing.T) {
+func TestNotAuthenticated(t *testing.T) {
+	var jsb = InitWithoutKeys()
+	jsb.SetHost("http://localhost:2221")
+
+	const project = "jsonbank/sdk-test"
+	var testFile = TestFile{"", fmt.Sprintf("%v/index.json", project)}
+
+	// Get test file Id
+	meta, err := jsb.GetDocumentMetaByPath(testFile.Path)
+	if err != nil {
+		if err.Code == "notFound" {
+			t.Error(errors.New("Test document not found. Please create a document with the content below at {" + testFile.Path + "} before running tests."))
+		} else {
+			t.Error(err)
+		}
+		return
+	}
+	testFile.Id = meta.Id
+
+	t.Run("GetContent", func(t *testing.T) {
+		document, err := jsb.GetContent(testFile.Id)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		// convert to map
+		data := document.(map[string]interface{})
+
+		if data["author"] != "jsonbank" {
+			t.Error(errors.New("GetContent should return a valid document"))
+		}
+	})
+
+	t.Run("GetContentByPath", func(t *testing.T) {
+		document, err := jsb.GetContentByPath(testFile.Path)
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		// convert to map
+		data := document.(map[string]interface{})
+
+		if data["author"] != "jsonbank" {
+			t.Error(errors.New("GetContentByPath should return a valid document"))
+		}
+	})
+
+	t.Run("GetGithubContent", func(t *testing.T) {
+		data, err := jsb.GetGithubContent("jsonbankio/jsonbank-js/package.json")
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		// convert to map
+		pkg := data.(map[string]interface{})
+
+		if pkg["name"] != "jsonbank" {
+			t.Error("GetGithubContent should return a valid document")
+
+		} else if pkg["author"] != "jsonbankio" {
+			t.Error("GetGithubContent should return a valid document")
+		}
+	})
+
+}
+
+func TestAuthenticated(t *testing.T) {
 	var jsb = Init(Config{
 		Host: "http://localhost:2221",
 		Keys: Keys{
@@ -196,14 +267,16 @@ func TestAuthenticatedMethods(t *testing.T) {
 		}
 	})
 
-	t.Run("UploadDocument", func(t *testing.T) {
+	t.Run("UploadDocument to new folder", func(t *testing.T) {
 		// delete test file.
-		_, _ = jsb.DeleteDocument("sdk-test/upload.json")
+		_, _ = jsb.DeleteDocument("sdk-test/folder/upload.json")
 
+		// Upload file to new folder
 		filePath := "./tests/upload.json"
 		document, err := jsb.UploadDocument(types.UploadDocumentBody{
 			FilePath: filePath,
 			Project:  project,
+			Folder:   "folder",
 		})
 
 		if err != nil {
@@ -211,7 +284,7 @@ func TestAuthenticatedMethods(t *testing.T) {
 			return
 		}
 
-		if document.Path != "upload.json" {
+		if document.Path != "folder/upload.json" {
 			t.Error("Document name mismatch")
 		}
 	})
