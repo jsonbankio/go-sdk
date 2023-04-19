@@ -28,6 +28,14 @@ func loadEnv() {
 			panic(err)
 		}
 	}
+
+	// if JSB_HOST is not set, set it to the default value
+	if os.Getenv("JSB_HOST") == "" {
+		err := os.Setenv("JSB_HOST", "https://api.jsonbank.io")
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func TestNotAuthenticated(t *testing.T) {
