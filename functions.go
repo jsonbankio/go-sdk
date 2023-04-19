@@ -16,6 +16,15 @@ func MakeDocumentPath(document types.CreateDocumentBody) string {
 	return document.Project + "/" + folder + document.Name
 }
 
+// MakeFolderPath - generate a folder full path
+func MakeFolderPath(folder types.CreateFolderBody) string {
+	f := ""
+	if folder.Folder != "" {
+		f = folder.Folder + "/"
+	}
+	return folder.Project + "/" + f + folder.Name
+}
+
 // IsValidJsonString - check if a string is  a valid json string
 func IsValidJsonString(s string) bool {
 	return json.Valid([]byte(s))

@@ -7,7 +7,7 @@ type CreateDocumentBody struct {
 	Content string `json:"content"`
 }
 
-type CreatedFolderBody struct {
+type CreateFolderBody struct {
 	Name    string `json:"name"`
 	Project string `json:"project"`
 	Folder  string `json:"folder"`

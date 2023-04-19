@@ -263,7 +263,7 @@ func TestAuthenticated(t *testing.T) {
 	})
 
 	t.Run("CreateFolder", func(t *testing.T) {
-		folder, err := jsb.CreateFolder(types.CreatedFolderBody{
+		folder, err := jsb.CreateFolder(types.CreateFolderBody{
 			Name:    "folder",
 			Project: project,
 		})
@@ -279,6 +279,86 @@ func TestAuthenticated(t *testing.T) {
 
 		if folder.Name != "folder" || folder.Project != project {
 			t.Error("New folder data mismatch")
+		}
+	})
+
+	t.Run("CreateFolderIfNotExists", func(t *testing.T) {
+		name := "folder44"
+		folder, err := jsb.CreateFolderIfNotExists(types.CreateFolderBody{
+			Name:    name,
+			Project: project,
+		})
+
+		if err != nil {
+			if err.Code == "name.exists" {
+				fmt.Println(err.Error())
+			} else {
+				t.Error(err)
+			}
+			return
+		}
+
+		if folder.Name != name || folder.Project != project {
+			t.Error("New folder data mismatch")
+		}
+	})
+
+	t.Run("GetFolder", func(t *testing.T) {
+		folderPath := project + "/folder"
+		folder, err := jsb.GetFolder(folderPath)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// project must match
+		if folder.Project != project {
+			t.Error("Folder project mismatch")
+		}
+
+		// try to get folder by id
+		folder, err = jsb.GetFolder(folder.Id)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// project must match
+		if folder.Project != project {
+			t.Error("Folder project mismatch")
+		}
+
+	})
+
+	t.Run("GetFolderWithStats", func(t *testing.T) {
+		folderPath := project + "/folder"
+		folder, err := jsb.GetFolderWithStats(folderPath)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// project must match
+		if folder.Project != project {
+			t.Error("Folder project mismatch")
+		}
+
+		// check that stats exist
+		if folder.Stats == nil {
+			t.Error("Folder stats are nil")
+		}
+
+		// try to get folder by id
+		folder, err = jsb.GetFolderWithStats(folder.Id)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// project must match
+		if folder.Project != project {
+			t.Error("Folder project mismatch")
+		}
+
+		// check that stats exist
+		if folder.Stats == nil {
+			t.Error("Folder stats are nil")
 		}
 	})
 

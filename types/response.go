@@ -19,11 +19,26 @@ type NewDocument struct {
 	Exists    bool   `json:"exists"`
 }
 
+type FolderStats struct {
+	Documents float64 `json:"documents"`
+	Folders   float64 `json:"folders"`
+}
+
+type Folder struct {
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	Path      string `json:"path"`
+	Project   string `json:"project"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	// optional fields
+	Stats *FolderStats `json:"stats,omitempty"`
+}
+
+// NewFolder extends Folder
 type NewFolder struct {
-	Id      string `json:"id"`
-	Name    string `json:"name"`
-	Path    string `json:"path"`
-	Project string `json:"project"`
+	Folder `json:",inline"`
+	Exists bool `json:"exists"`
 }
 
 type DocumentMeta struct {

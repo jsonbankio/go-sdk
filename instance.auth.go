@@ -150,7 +150,7 @@ func (jsb *Instance) CreateDocument(document types.CreateDocumentBody) (*types.N
 		Path:      data["path"].(string),
 		Project:   data["project"].(string),
 		CreatedAt: data["createdAt"].(string),
-		Exists:    data["exists"] == true,
+		Exists:    true,
 	}, nil
 }
 
@@ -278,7 +278,7 @@ func (jsb *Instance) DeleteDocument(idOrPath string) (*types.DeletedDocument, *R
 }
 
 // CreateFolder - creates a folder
-func (jsb *Instance) CreateFolder(body types.CreatedFolderBody) (*types.NewFolder, *RequestError) {
+func (jsb *Instance) CreateFolder(body types.CreateFolderBody) (*types.NewFolder, *RequestError) {
 	// project is required
 	if body.Project == "" {
 		return nil, &RequestError{"bad_request", "Project is required"}
@@ -305,10 +305,99 @@ func (jsb *Instance) CreateFolder(body types.CreatedFolderBody) (*types.NewFolde
 	// convert to map
 	d := data.(map[string]interface{})
 
+	f := &types.Folder{
+		Id:        d["id"].(string),
+		Name:      d["name"].(string),
+		Path:      d["path"].(string),
+		Project:   d["project"].(string),
+		CreatedAt: d["createdAt"].(string),
+		UpdatedAt: d["updatedAt"].(string),
+	}
+
 	return &types.NewFolder{
-		Id:      d["id"].(string),
-		Name:    d["name"].(string),
-		Path:    d["path"].(string),
-		Project: d["project"].(string),
+		Folder: *f,
+		Exists: false,
 	}, nil
+}
+
+// CreateFolderIfNotExists - creates a folder if it does not exist
+// try to create the folder, if it exists then fetch the folder
+func (jsb *Instance) CreateFolderIfNotExists(body types.CreateFolderBody) (*types.NewFolder, *RequestError) {
+	data, err := jsb.CreateFolder(body)
+	if err != nil {
+		// if code is "name.exists" then fetch folder
+		if err.Code == "name.exists" {
+			folder, err := jsb.GetFolder(MakeFolderPath(body))
+			if err != nil {
+				return nil, err
+			}
+
+			return &types.NewFolder{
+				Folder: *folder,
+				Exists: true,
+			}, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	return data, nil
+}
+
+// getFolder - gets a folder
+func (jsb *Instance) getFolder(idOrPath string, includeStats bool) (*types.Folder, *RequestError) {
+	url := fmt.Sprintf("/folder/%s", idOrPath)
+
+	// add query params
+	if includeStats {
+		url += "?stats=true"
+	}
+
+	// make request
+	req, err := jsb.makeRequest("GET", jsb.urls.v1+url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// send request
+	data, err := jsb.sendRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert to map
+	d := data.(map[string]interface{})
+
+	f := &types.Folder{
+		Id:        d["id"].(string),
+		Name:      d["name"].(string),
+		Path:      d["path"].(string),
+		Project:   d["project"].(string),
+		CreatedAt: d["createdAt"].(string),
+		UpdatedAt: d["updatedAt"].(string),
+	}
+
+	if includeStats {
+		stats := d["stats"].(map[string]interface{})
+
+		if stats != nil {
+			f.Stats = &types.FolderStats{
+				Documents: stats["documents"].(float64),
+				Folders:   stats["folders"].(float64),
+			}
+		}
+	}
+
+	return f, nil
+
+}
+
+// GetFolder - gets a folder
+func (jsb *Instance) GetFolder(idOrPath string) (*types.Folder, *RequestError) {
+	return jsb.getFolder(idOrPath, false)
+}
+
+// GetFolderWithStats - gets a folder with stats
+func (jsb *Instance) GetFolderWithStats(idOrPath string) (*types.Folder, *RequestError) {
+	return jsb.getFolder(idOrPath, true)
 }
