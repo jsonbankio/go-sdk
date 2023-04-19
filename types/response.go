@@ -1,8 +1,8 @@
 package types
 
 type AuthenticatedKey struct {
-	Title    string `json:"title"`
-	Projects string `json:"projects"`
+	Title    string   `json:"title"`
+	Projects []string `json:"projects,omitempty"`
 }
 type AuthenticatedData struct {
 	Authenticated bool   `json:"authenticated"`

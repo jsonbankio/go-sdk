@@ -73,8 +73,8 @@ func (jsb *Instance) GetDocumentMetaByPath(path string) (*types.DocumentMeta, *R
 }
 
 // GetGithubContent - get public content from GitHub
-func (jsb *Instance) GetGithubContent(idOrPath string) (any, *RequestError) {
-	req, err := jsb.makePublicRequest("GET", jsb.urls.public+"/gh/"+idOrPath, nil)
+func (jsb *Instance) GetGithubContent(path string) (any, *RequestError) {
+	req, err := jsb.makePublicRequest("GET", jsb.urls.public+"/gh/"+path, nil)
 	if err != nil {
 		return nil, err
 	}

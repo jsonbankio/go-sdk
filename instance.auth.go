@@ -23,13 +23,21 @@ func (jsb *Instance) Authenticate() (*types.AuthenticatedData, *RequestError) {
 	jsb.memory["authenticated"] = true
 	data := d.(map[string]any)
 
+	apiKey := types.AuthenticatedKey{
+		Title: data["apiKey"].(map[string]interface{})["title"].(string),
+		Projects: func() []string {
+			var projects []string
+			for _, project := range data["apiKey"].(map[string]interface{})["projects"].([]interface{}) {
+				projects = append(projects, project.(string))
+			}
+			return projects
+		}(),
+	}
+
 	authenticatedData := types.AuthenticatedData{
 		Authenticated: data["authenticated"].(bool),
 		Username:      data["username"].(string),
-		ApiKey: types.AuthenticatedKey{
-			Title:    data["apiKey"].(map[string]interface{})["title"].(string),
-			Projects: data["apiKey"].(map[string]interface{})["projects"].(string),
-		},
+		ApiKey:        apiKey,
 	}
 
 	jsb.memory["authenticatedData"] = authenticatedData

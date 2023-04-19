@@ -1,4 +1,4 @@
-# Jsonbank.io GoLang Sdk
+# Jsonbank.io GoLang SDK
 
 The official repository for jsonbank.io GoLang SDK.
 
