@@ -23,7 +23,10 @@ const testFileContent = `{
 func loadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		panic(err)
+		// if CI is true, we are running tests on github actions, so we don't need to panic
+		if os.Getenv("CI") != "true" {
+			panic(err)
+		}
 	}
 }
 
@@ -283,7 +286,7 @@ func TestAuthenticated(t *testing.T) {
 	})
 
 	t.Run("CreateFolderIfNotExists", func(t *testing.T) {
-		name := "folder44"
+		name := "folder"
 		folder, err := jsb.CreateFolderIfNotExists(types.CreateFolderBody{
 			Name:    name,
 			Project: project,
