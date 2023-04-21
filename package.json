@@ -1,6 +1,7 @@
 {
   "scripts": {
     "test": "go test -v",
-    "test:dev": "nodemon --exec go run tests/test.go --signal SIGTERM"
+    "test:dev": "nodemon --exec go run tests/test.go --signal SIGTERM",
+    "list": "GOPROXY=proxy.golang.org go list -m"
   }
 }
