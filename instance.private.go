@@ -102,3 +102,48 @@ func (jsb *Instance) sendRequest(req *http.Request) (any, *RequestError) {
 
 	return data, nil
 }
+
+// sendRequestAsText - send request and return response as text
+func (jsb *Instance) sendRequestAsText(req *http.Request) (*string, *RequestError) {
+	// make request
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, &RequestError{"request_error", err.Error()}
+	}
+
+	// check if request was successful
+	if res.StatusCode != 200 {
+		// convert response to json
+		var data map[string]any
+		jsonError := json.NewDecoder(res.Body).Decode(&data)
+
+		if jsonError != nil {
+			return nil, &RequestError{"json_error", jsonError.Error()}
+		}
+
+		if data["error"] != nil {
+			dataError := data["error"]
+			// check if dataError is a map
+			if reflect.TypeOf(dataError).Kind() == reflect.String {
+				return nil, &RequestError{"request_error", dataError.(string)}
+			} else if reflect.TypeOf(dataError).Kind() == reflect.Map {
+				dataError := dataError.(map[string]any)
+				return nil, &RequestError{dataError["code"].(string), dataError["message"].(string)}
+			} else {
+				return nil, &RequestError{"request_error", "Request was not successful"}
+			}
+		} else {
+			return nil, &RequestError{"request_error", "Request was not successful"}
+		}
+	}
+
+	// convert res.Body to string
+	bodyBytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, &RequestError{"request_error", err.Error()}
+	}
+
+	bodyString := string(bodyBytes)
+
+	return &bodyString, nil
+}

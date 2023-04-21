@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/jsonbankio/go-sdk/types"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -48,7 +49,7 @@ func TestNotAuthenticated(t *testing.T) {
 	var testFile = TestFile{"", fmt.Sprintf("%v/index.json", project)}
 
 	// Get test file Id
-	meta, err := jsb.GetDocumentMetaByPath(testFile.Path)
+	meta, err := jsb.GetDocumentMeta(testFile.Path)
 	if err != nil {
 		if err.Code == "notFound" {
 			t.Error("Test document not found. Please create a document with the content below at {" + testFile.Path + "} before running tests.\n" + testFileContent)
@@ -74,8 +75,26 @@ func TestNotAuthenticated(t *testing.T) {
 		}
 	})
 
+	t.Run("GetContentAsString", func(t *testing.T) {
+		document, err := jsb.GetContentAsString(testFile.Id)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		// check that string is valid json
+		if !IsValidJsonString(document) {
+			t.Error(errors.New("GetContentAsString should return a valid json string"))
+		}
+
+		// string contains author
+		if !strings.Contains(document, "author") {
+			t.Error(errors.New("GetContentAsString must contain author"))
+		}
+	})
+
 	t.Run("GetContentByPath", func(t *testing.T) {
-		document, err := jsb.GetContentByPath(testFile.Path)
+		document, err := jsb.GetContent(testFile.Path)
 
 		if err != nil {
 			t.Error(err)
@@ -106,6 +125,25 @@ func TestNotAuthenticated(t *testing.T) {
 
 		} else if pkg["author"] != "jsonbankio" {
 			t.Error("GetGithubContent should return a valid document")
+		}
+	})
+
+	t.Run("GetGithubContentAsString", func(t *testing.T) {
+		data, err := jsb.GetGithubContentAsString("jsonbankio/jsonbank-js/package.json")
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		// check that string is valid json
+		if !IsValidJsonString(data) {
+			t.Error("GetGithubContentAsString should return a valid json string")
+		}
+
+		// string contains author
+		if !strings.Contains(data, "prepublishOnly") {
+			t.Error("GetGithubContentAsString must contain prepublishOnly")
 		}
 	})
 
@@ -164,8 +202,25 @@ func TestAuthenticated(t *testing.T) {
 		}
 	})
 
+	t.Run("GetOwnContentAsString", func(t *testing.T) {
+		content, err := jsb.GetOwnContentAsString(testFile.Id)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// check that string is valid json
+		if !IsValidJsonString(content) {
+			t.Error("GetOwnContentAsString should return a valid json string")
+		}
+
+		// string contains author
+		if !strings.Contains(content, "author") {
+			t.Error("GetOwnContentAsString must contain author")
+		}
+	})
+
 	t.Run("GetOwnContentByPath", func(t *testing.T) {
-		content, err := jsb.GetOwnContentByPath(testFile.Path)
+		content, err := jsb.GetOwnContent(testFile.Path)
 		if err != nil {
 			t.Error(err)
 		}
@@ -189,7 +244,7 @@ func TestAuthenticated(t *testing.T) {
 	})
 
 	t.Run("GetOwnDocumentMetaByPath", func(t *testing.T) {
-		meta, err := jsb.GetOwnDocumentMetaByPath(testFile.Path)
+		meta, err := jsb.GetOwnDocumentMeta(testFile.Path)
 		if err != nil {
 			t.Error(err)
 		}

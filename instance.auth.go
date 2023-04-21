@@ -74,10 +74,21 @@ func (jsb *Instance) GetOwnContent(idOrPath string) (any, *RequestError) {
 	return data, nil
 }
 
-// GetOwnContentByPath - gets the content (by path) of a document owned by the authenticated user
-// This is only but a syntactic sugar for GetOwnContent by path
-func (jsb *Instance) GetOwnContentByPath(path string) (any, *RequestError) {
-	return jsb.GetOwnContent(path)
+// GetOwnContentAsString - gets the content of a document owned by the authenticated user as string
+func (jsb *Instance) GetOwnContentAsString(idOrPath string) (string, *RequestError) {
+	req, err := jsb.makeRequest("GET", jsb.urls.v1+"/file/"+idOrPath, nil)
+	if err != nil {
+		return "", err
+	}
+
+	// make request
+	data, err := jsb.sendRequestAsText(req)
+
+	if err != nil {
+		return "", err
+	}
+
+	return *data, nil
 }
 
 // GetOwnDocumentMeta - gets the content meta of the authenticated user
@@ -102,12 +113,6 @@ func (jsb *Instance) GetOwnDocumentMeta(idOrPath string) (*types.DocumentMeta, *
 		UpdatedAt: data["updatedAt"].(string),
 		CreatedAt: data["createdAt"].(string),
 	}, nil
-}
-
-// GetOwnDocumentMetaByPath - gets the content meta (by path) of the authenticated user
-// This is only but a syntactic sugar for GetOwnDocumentMeta by path
-func (jsb *Instance) GetOwnDocumentMetaByPath(path string) (*types.DocumentMeta, *RequestError) {
-	return jsb.GetOwnDocumentMeta(path)
 }
 
 // CreateDocument - creates a document

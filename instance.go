@@ -36,10 +36,21 @@ func (jsb *Instance) GetContent(idOrPath string) (any, *RequestError) {
 	return data, nil
 }
 
-// GetContentByPath - get public content  by path
-// This is only but a syntactic sugar for GetContent by path
-func (jsb *Instance) GetContentByPath(path string) (any, *RequestError) {
-	return jsb.GetContent(path)
+// GetContentAsString - get public content from jsonbank as string
+func (jsb *Instance) GetContentAsString(idOrPath string) (string, *RequestError) {
+	req, err := jsb.makePublicRequest("GET", jsb.urls.public+"/f/"+idOrPath, nil)
+	if err != nil {
+		return "", err
+	}
+
+	// send request
+	data, err := jsb.sendRequestAsText(req)
+
+	if err != nil {
+		return "", err
+	}
+
+	return *data, nil
 }
 
 // GetDocumentMeta - get public document meta
@@ -66,12 +77,6 @@ func (jsb *Instance) GetDocumentMeta(idOrPath string) (*types.DocumentMeta, *Req
 	}, nil
 }
 
-// GetDocumentMetaByPath - get public document meta by path
-// This is only but a syntactic sugar for GetDocumentMeta by path
-func (jsb *Instance) GetDocumentMetaByPath(path string) (*types.DocumentMeta, *RequestError) {
-	return jsb.GetDocumentMeta(path)
-}
-
 // GetGithubContent - get public content from GitHub
 func (jsb *Instance) GetGithubContent(path string) (any, *RequestError) {
 	req, err := jsb.makePublicRequest("GET", jsb.urls.public+"/gh/"+path, nil)
@@ -86,4 +91,21 @@ func (jsb *Instance) GetGithubContent(path string) (any, *RequestError) {
 	}
 
 	return data, nil
+}
+
+// GetGithubContentAsString - get public content from GitHub as string
+func (jsb *Instance) GetGithubContentAsString(path string) (string, *RequestError) {
+	req, err := jsb.makePublicRequest("GET", jsb.urls.public+"/gh/"+path, nil)
+	if err != nil {
+		return "", err
+	}
+
+	// send request
+	data, err := jsb.sendRequestAsText(req)
+
+	if err != nil {
+		return "", err
+	}
+
+	return *data, nil
 }
