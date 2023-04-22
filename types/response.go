@@ -41,12 +41,32 @@ type NewFolder struct {
 	Exists bool `json:"exists"`
 }
 
+type ContentSize struct {
+	Number float64 `json:"number"`
+	String string  `json:"string"`
+}
+
 type DocumentMeta struct {
-	Id        string `json:"id"`
-	Project   string `json:"project"`
-	Path      string `json:"path"`
-	UpdatedAt string `json:"updatedAt"`
-	CreatedAt string `json:"createdAt"`
+	Id          string      `json:"id"`
+	Project     string      `json:"project"`
+	Path        string      `json:"path"`
+	ContentSize ContentSize `json:"contentSize"`
+	UpdatedAt   string      `json:"updatedAt"`
+	CreatedAt   string      `json:"createdAt"`
+}
+
+func DataToDocumentMeta(data map[string]interface{}) *DocumentMeta {
+	return &DocumentMeta{
+		Id:      data["id"].(string),
+		Path:    data["path"].(string),
+		Project: data["project"].(string),
+		ContentSize: ContentSize{
+			Number: data["contentSize"].(map[string]interface{})["number"].(float64),
+			String: data["contentSize"].(map[string]interface{})["string"].(string),
+		},
+		CreatedAt: data["createdAt"].(string),
+		UpdatedAt: data["updatedAt"].(string),
+	}
 }
 
 type UpdatedDocument struct {

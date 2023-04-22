@@ -106,13 +106,7 @@ func (jsb *Instance) GetOwnDocumentMeta(idOrPath string) (*types.DocumentMeta, *
 
 	data := d.(map[string]any)
 
-	return &types.DocumentMeta{
-		Id:        data["id"].(string),
-		Project:   data["project"].(string),
-		Path:      data["path"].(string),
-		UpdatedAt: data["updatedAt"].(string),
-		CreatedAt: data["createdAt"].(string),
-	}, nil
+	return types.DataToDocumentMeta(data), nil
 }
 
 // CreateDocument - creates a document

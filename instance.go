@@ -68,13 +68,7 @@ func (jsb *Instance) GetDocumentMeta(idOrPath string) (*types.DocumentMeta, *Req
 
 	data := d.(map[string]any)
 
-	return &types.DocumentMeta{
-		Id:        data["id"].(string),
-		Path:      data["path"].(string),
-		Project:   data["project"].(string),
-		CreatedAt: data["createdAt"].(string),
-		UpdatedAt: data["updatedAt"].(string),
-	}, nil
+	return types.DataToDocumentMeta(data), nil
 }
 
 // GetGithubContent - get public content from GitHub
