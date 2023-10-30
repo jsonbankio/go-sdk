@@ -58,10 +58,12 @@ type DocumentMeta struct {
 }
 
 func DataToDocumentMeta(data map[string]interface{}) *DocumentMeta {
-	return &DocumentMeta{
+
+	d := &DocumentMeta{
 		Id:      data["id"].(string),
 		Path:    data["path"].(string),
 		Project: data["project"].(string),
+		Name:    data["name"].(string),
 		ContentSize: ContentSize{
 			Number: data["contentSize"].(map[string]interface{})["number"].(float64),
 			String: data["contentSize"].(map[string]interface{})["string"].(string),
@@ -69,6 +71,13 @@ func DataToDocumentMeta(data map[string]interface{}) *DocumentMeta {
 		CreatedAt: data["createdAt"].(string),
 		UpdatedAt: data["updatedAt"].(string),
 	}
+
+	// check if folder exists
+	if data["folderId"] != nil {
+		d.FolderId = data["folderId"].(string)
+	}
+
+	return d
 }
 
 type UpdatedDocument struct {
