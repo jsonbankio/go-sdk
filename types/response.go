@@ -48,9 +48,11 @@ type ContentSize struct {
 
 type DocumentMeta struct {
 	Id          string      `json:"id"`
+	Name        string      `json:"name"`
 	Project     string      `json:"project"`
 	Path        string      `json:"path"`
 	ContentSize ContentSize `json:"contentSize"`
+	FolderId    string      `json:"folderId"`
 	UpdatedAt   string      `json:"updatedAt"`
 	CreatedAt   string      `json:"createdAt"`
 }
