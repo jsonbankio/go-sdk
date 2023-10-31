@@ -25,12 +25,13 @@ type FolderStats struct {
 }
 
 type Folder struct {
-	Id        string `json:"id"`
-	Name      string `json:"name"`
-	Path      string `json:"path"`
-	Project   string `json:"project"`
-	CreatedAt string `json:"createdAt"`
-	UpdatedAt string `json:"updatedAt"`
+	Id           string `json:"id"`
+	Name         string `json:"name"`
+	Path         string `json:"path"`
+	Project      string `json:"project"`
+	ParentFolder string `json:"parentFolder"`
+	CreatedAt    string `json:"createdAt"`
+	UpdatedAt    string `json:"updatedAt"`
 	// optional fields
 	Stats *FolderStats `json:"stats,omitempty"`
 }
